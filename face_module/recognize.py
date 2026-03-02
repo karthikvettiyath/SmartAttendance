@@ -6,7 +6,9 @@ STUDENT_NAMES = {
     1: "Karthik V R ",
     2: "Vivek Nair C",
     3: "Santhipriyan",
-}
+    4: "Aditya",
+    5: "Janita"
+} 
 
 def get_name(student_id: int) -> str:
     return STUDENT_NAMES.get(student_id, f"Unknown (ID: {student_id})")

@@ -1,18 +1,22 @@
-# Tech Stack – Face Module
+# Tech Stack
 
-## Programming Language
-- Python 3.10+
+## Frontend
+- HTML, CSS, JavaScript
+- Optional: React
 
-## Libraries
+## Backend
+- Python (Flask / FastAPI)
+
+## Face Recognition
+- face_recognition (dlib)
+- MTCNN (face detection)
+
+## Database
+- MySQL
+
+## Authentication
+- JWT
+
+## Tools
 - OpenCV
 - NumPy
-
-## Face Detection Algorithm
-- Haar Cascade Classifier
-
-## Hardware
-- Laptop with webcam
-- Minimum 4GB RAM
-
-## OS
-- Windows / Linux / Mac

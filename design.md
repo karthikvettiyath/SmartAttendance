@@ -1,29 +1,33 @@
-# Design Document – Face Module
+# System Design Document
 
-## 1. System Flow
+## System Flow
 
-Webcam → Frame Capture → Grayscale Conversion → Face Detection → Crop → Resize → Save
+1. Teacher uploads classroom image
+2. Backend detects faces
+3. Faces are encoded into vectors
+4. Compare with database encodings
+5. Mark matched students as present
+6. Mark others as absent
 
-## 2. Folder Structure
+## Dataset Design
 
-dataset/
-    ├── student_id/
-          ├── img1.jpg
-          ├── img2.jpg
+- Each student has 50–100 images
+- Multiple angles included
+- Encodings stored in database
 
-## 3. Detection Algorithm
+## UI Design
 
-- Haar Cascade Classifier
-- Scale factor: 1.3
-- Min neighbors: 5
+- Login Page
+- Dashboard (based on role)
+- Upload Attendance Page
+- Reports Page
 
-## 4. Image Processing
+## Recognition Logic
 
-- Convert BGR to Grayscale
-- Resize to 200x200
-- Save as JPG
+- Face distance threshold: 0.6
+- Best match selected
 
-## 5. Error Handling
+## Error Handling
 
-- No face detected → Skip frame
-- Multiple faces → Capture largest face
+- No faces detected → notify user
+- Unknown faces → ignore

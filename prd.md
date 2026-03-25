@@ -1,28 +1,36 @@
-# Product Requirements Document (PRD)
-## Module: Face Capture & Dataset Creation
+# Product Requirements Document
 
-### 1. Overview
-This module captures student face images using webcam and stores them in a structured dataset format for training the recognition model.
+## Project Title
+AI-Based Classroom Attendance System
 
-### 2. Objective
-- Capture high-quality face images.
-- Detect faces accurately.
-- Store images in organized folder structure.
+## Objective
+To automate attendance using face recognition from classroom images.
 
-### 3. Functional Requirements
-- Open webcam feed.
-- Detect face using Haar Cascade.
-- Draw bounding box around detected face.
-- Capture 50 images per student.
-- Convert to grayscale.
-- Resize images to 200x200.
-- Save inside dataset/student_id folder.
+## Key Features
+- Role-based login system
+- Student dataset creation with guided capture
+- Classroom image upload
+- Face recognition-based attendance marking
+- Attendance report generation
 
-### 4. Non-Functional Requirements
-- Fast detection (<1 second delay)
-- Works in classroom lighting
-- Simple CLI interaction
+## User Roles
+- Admin
+- Principal
+- HOD
+- Teacher
+- Student
 
-### 5. Success Criteria
-- 95% face detection success in controlled lighting.
-- Dataset correctly structured.
+## Functional Requirements
+- Detect multiple faces in a classroom image
+- Match faces with stored encodings
+- Mark attendance automatically
+- Store attendance per date and session
+
+## Non-Functional Requirements
+- Accuracy > 90%
+- Response time < 5 seconds
+- Secure authentication
+
+## Success Criteria
+- Accurate recognition under varied conditions
+- Reliable attendance reports

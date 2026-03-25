@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Smart Attendance</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-body">
+    <div class="sidebar">
+        <h2>🧑‍💻 Smart Attendance</h2>
+        <ul id="sidebar-nav">
+            <li><a href="#" data-target="uploadView" class="nav-link active">Upload Classroom</a></li>
+            <li><a href="#" data-target="reportsView" class="nav-link">View Reports</a></li>
+            <li><a href="#" data-target="studentsView" class="nav-link">Manage Students</a></li>
+        </ul>
+        <div class="bottom-nav">
+            <button onclick="logout()" class="btn-outline">Logout</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <header>
+            <h2 id="welcomeMsg">Welcome, Teacher</h2>
+        </header>
+        
+        <!-- UPLOAD CLASSROOM TAB -->
+        <div id="uploadView" class="view-section active">
+            <div class="card upload-card">
+                <h3>📷 Take Attendance</h3>
+                <p>Upload a classroom photo to mark attendance using DeepFace AI.</p>
+                <form id="uploadForm">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Session Name</label>
+                            <input type="text" id="sessionName" placeholder="e.g. CS101 Morning" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Date</label>
+                            <input type="date" id="targetDate" required>
+                        </div>
+                    </div>
+                    
+                    <div class="file-upload">
+                        <input type="file" id="classroomImage" accept="image/*" required>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="uploadBtn">Process Image</button>
+                </form>
+                <div id="resultsArea" class="results-area hidden"></div>
+            </div>
+        </div>
+
+        <!-- VIEW REPORTS TAB -->
+        <div id="reportsView" class="view-section hidden">
+            <div class="card">
+                <h3>📊 Attendance Reports</h3>
+                <p>View all attendance logs triggered by the AI engine.</p>
+                <button class="btn-primary" onclick="loadReports()" style="margin-bottom: 20px; width: auto; padding: 10px 20px;">Refresh Logs</button>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Roll No</th>
+                            <th>Date</th>
+                            <th>Session</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportsTableBody">
+                        <tr><td colspan="5" style="text-align: center;">Click Refresh to load data</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- MANAGE STUDENTS (FACE ENROLLMENT) TAB -->
+        <div id="studentsView" class="view-section hidden">
+            <div class="card">
+                <h3>🧑‍🎓 Enroll New Student</h3>
+                <p>Use your webcam to register a student's face into the remote Supabase neural network.</p>
+                
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Student Name</label>
+                        <input type="text" id="enrollName" placeholder="John Doe">
+                    </div>
+                    <div class="input-group">
+                        <label>Roll Number</label>
+                        <input type="text" id="enrollRoll" placeholder="101XYZ">
+                    </div>
+                    <div class="input-group">
+                        <label>Department</label>
+                        <input type="text" id="enrollDept" placeholder="Computer Science">
+                    </div>
+                </div>
+
+                <div class="webcam-container">
+                    <video id="webcamVideo" autoplay playsinline width="400" height="300" style="background:#000; border-radius:8px; display:none; margin: 0 auto;"></video>
+                    <canvas id="webcamCanvas" style="display:none;"></canvas>
+                    <h3 id="captureInstructions" style="text-align:center; margin-top:15px; color:#ef4444;"></h3>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button id="startCamBtn" class="btn-outline" onclick="startCamera()">Turn On Camera</button>
+                    <button id="enrollBtn" class="btn-primary" onclick="enrollStudent()" disabled>Start Angle Capture & Enroll</button>
+                </div>
+                
+                <div id="enrollResults" class="results-area hidden" style="margin-top: 15px;"></div>
+                
+                <hr style="margin: 30px 0; border: none; border-top: 1px solid var(--border);">
+                
+                <h3>📋 Currently Enrolled Students</h3>
+                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">View the list of students actively tracked in the neural network.</p>
+                <button class="btn-outline" onclick="loadStudents()" style="margin-bottom: 20px; width: auto; padding: 8px 16px;">Refresh Student List</button>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Roll Number</th>
+                            <th>Department</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentsTableBody">
+                        <tr><td colspan="3" style="text-align: center;">Click Refresh to load list</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+    
+    <script src="app.js"></script>
+    <script>
+        // Restrict access
+        if(!localStorage.getItem("token")) {
+            window.location.href = "index.html";
+        }
+        document.getElementById("welcomeMsg").innerText = "Welcome, " + localStorage.getItem("username");
+    </script>
+</body>
+</html>

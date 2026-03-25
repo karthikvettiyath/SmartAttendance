@@ -1,26 +1,32 @@
 import cv2
 import os
+from mtcnn import MTCNN
 
 def capture_student_faces(student_id, target_dir, num_images=50):
     """
-    Captures faces from the webcam and saves them as grayscale images.
+    Captures faces from the webcam using MTCNN and saves them as images.
+    Includes guided instructions for different face angles.
     """
-    face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
-    
-    if face_cascade.empty():
-        print("[ERROR] Failed to load haarcascade_frontalface_default.xml")
-        return False
-        
+    detector = MTCNN()
     cap = cv2.VideoCapture(0)
     
     if not cap.isOpened():
         print("[ERROR] Could not open webcam.")
         return False
         
-    print("[INFO] Starting face capture. Please look at the camera.")
+    print("[INFO] Starting guided face capture.")
     print(f"[INFO] Waiting for {num_images} images to be captured...")
     
     count = 0
+    instructions = [
+        (0, 10, "Look Straight"),
+        (10, 20, "Turn Right Slightly"),
+        (20, 30, "Turn Left Slightly"),
+        (30, 40, "Tilt Up Slightly"),
+        (40, 50, "Tilt Down Slightly")
+    ]
+    
+    current_instruction = instructions[0][2]
     
     while True:
         ret, frame = cap.read()
@@ -28,30 +34,39 @@ def capture_student_faces(student_id, target_dir, num_images=50):
             print("[ERROR] Failed to grab frame.")
             break
             
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5)
+        # MTCNN uses RGB
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        results = detector.detect_faces(rgb_frame)
         
-        for (x, y, w, h) in faces:
-            # Draw rectangle around face
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
-            
-            # Increment capture count
-            count += 1
-            
-            # Save the captured face image
-            face_img = gray[y:y + h, x:x + w]
-            img_path = os.path.join(target_dir, f"{count}.jpg")
-            cv2.imwrite(img_path, face_img)
-            
-            # Briefly pause face detection for visual feedback
-            cv2.waitKey(100)
-            
-            if count >= num_images:
+        # Determine current instruction
+        for start, end, instr in instructions:
+            if start <= count < end:
+                current_instruction = instr
                 break
                 
-        cv2.imshow("Face Capture", frame)
+        # Draw instruction UI
+        cv2.putText(frame, f"Task: {current_instruction} ({count}/{num_images})", 
+                    (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
+                    
+        if results:
+            # Pick the largest face in the frame
+            largest_face = max(results, key=lambda b: b['box'][2] * b['box'][3])
+            x, y, w, h = largest_face['box']
+            x, y = abs(x), abs(y)
+            
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            
+            # Save the captured face crop
+            face_img = frame[y:y + h, x:x + w]
+            if face_img.size > 0:
+                count += 1
+                img_path = os.path.join(target_dir, f"{count}.jpg")
+                cv2.imwrite(img_path, face_img)
+                cv2.waitKey(200) # Ensure a slight delay so images are diverse
+            
+        cv2.imshow("Guided Face Capture", frame)
         
-        # Press 'ESC' to exit early or automatically stop after num_images
+        # Press ESC or hit max images to stop
         if cv2.waitKey(1) == 27 or count >= num_images:
             break
             

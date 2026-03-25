@@ -1,23 +1,28 @@
-# Architecture – Face Dataset Module
+# System Architecture
 
-## Module Position in Overall System
+## High-Level Architecture
 
-[Face Capture Module]
+Frontend (Web App)
         ↓
-[Dataset Storage]
+Backend API (Flask/FastAPI)
         ↓
-[Training Module – Member 2]
+Face Recognition Engine
+        ↓
+Database (MySQL)
 
-## Responsibilities
+## Modules
 
-- Collect face data
-- Preprocess images
-- Store structured dataset
+1. Authentication Module
+2. Dataset Creation Module
+3. Face Recognition Module
+4. Attendance Management Module
+5. Reporting Module
 
-## Input
-- Student ID
-- Webcam feed
+## Data Flow
 
-## Output
-- Clean dataset folder
-- 50 images per student
+User → Upload Image → Backend → Face Detection → Matching → Attendance Update → Response
+
+## Integration
+
+- REST API connects frontend and backend
+- Face recognition runs server-side

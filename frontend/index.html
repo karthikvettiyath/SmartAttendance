@@ -3,30 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Attendance System - Login</title>
+    <title>Smart Attendance - College Management System</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body class="login-body">
     <div class="login-container">
         <div class="logo">
-            <h1>🧑‍💻 AI Attendance</h1>
+            <h1>🧑‍🏫 Smart Attendance</h1>
+            <p>Institutional Access Management</p>
         </div>
+        
         <form id="loginForm">
             <div class="input-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" placeholder="Enter your username" required>
+                <label for="username">Faculty ID / Username</label>
+                <input type="text" id="username" placeholder="e.g. FAC-5601" required>
             </div>
             
             <div class="input-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" placeholder="Enter your password" required>
+                <label for="password">Security Password</label>
+                <input type="password" id="password" placeholder="••••••••" required>
             </div>
 
-            <button type="submit" class="btn-primary">Sign In</button>
+            <button type="submit" class="btn-primary">Secure Sign In</button>
         </form>
-        <p id="errorMsg" class="error-msg"></p>
+        
+        <div id="errorMsg" class="error-msg hidden"></div>
+        
+        <div style="margin-top: 32px; border-top: 1px solid var(--border); padding-top: 24px;">
+            <p style="font-size: 13px; color: var(--text-muted);">
+                Protecting Institutional Data via DeepFace™ Encription<br>
+                &copy; 2026 Smart Attendance System
+            </p>
+        </div>
     </div>
     <script src="app.js"></script>
+    <script>
+        // Adjust error message visibility
+        const err = document.getElementById("errorMsg");
+        const observer = new MutationObserver(() => {
+            if(err.innerText.trim() !== "") err.classList.remove("hidden");
+            else err.classList.add("hidden");
+        });
+        observer.observe(err, { childList: true });
+    </script>
 </body>
 </html>

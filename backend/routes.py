@@ -129,9 +129,9 @@ def upload_classroom_image(
     # 2. Get students and their encodings
     students = db.query(models.Student).all()
     db_encodings_map = {}
-    student_name_map = {}
+    student_info_map = {} # Store both name and roll_no
     for s in students:
-        student_name_map[s.id] = s.name
+        student_info_map[s.id] = {"name": s.name, "roll_no": s.roll_no}
         if s.face_encoding:
             db_encodings_map[s.id] = json.loads(s.face_encoding)
 
@@ -177,9 +177,10 @@ def upload_classroom_image(
         if min_dist < 0.30 and best_match_id is not None:
             present_student_ids.add(best_match_id)
             color = (0, 255, 0) # Green for Match
-            label = f"{student_name_map[best_match_id]} [{min_dist:.2f}]"
+            info = student_info_map[best_match_id]
+            label = f"{info['name']} ({info['roll_no']})"
         else:
-            label = f"Unknown [{min_dist:.2f}]"
+            label = "Unknown"
 
         # Graphic plotting
         cv2.rectangle(frame, (x, y), (x+w, y+h), color, 3)

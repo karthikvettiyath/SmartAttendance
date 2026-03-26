@@ -3,50 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Smart Attendance</title>
+    <title>Management Console - Smart Attendance</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body class="dashboard-body">
     <div class="sidebar">
-        <h2>🧑‍💻 Smart Attendance</h2>
+        <h2>🏛️ SmartAdmin</h2>
         <ul id="sidebar-nav">
-            <li><a href="#" data-target="uploadView" class="nav-link active">Upload Classroom</a></li>
-            <li><a href="#" data-target="reportsView" class="nav-link">View Reports</a></li>
-            <li><a href="#" data-target="studentsView" class="nav-link">Manage Students</a></li>
+            <li><a href="#" data-target="uploadView" class="nav-link active"><span>📸</span> Take Attendance</a></li>
+            <li><a href="#" data-target="reportsView" class="nav-link"><span>📊</span> View Reports</a></li>
+            <li><a href="#" data-target="studentsView" class="nav-link"><span>🎓</span> Student Roster</a></li>
         </ul>
         <div class="bottom-nav">
-            <button onclick="logout()" class="btn-outline">Logout</button>
+            <button onclick="logout()" class="btn-outline">Sign Out</button>
         </div>
     </div>
 
     <div class="main-content">
         <header>
-            <h2 id="welcomeMsg">Welcome, Teacher</h2>
+            <div>
+                <h2 id="welcomeMsg">Welcome, Professor</h2>
+                <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">Institutional Attendance Management Portal</p>
+            </div>
+            <div class="system-status" style="display: flex; gap: 20px;">
+                <div style="text-align: right;">
+                    <span style="font-size: 12px; font-weight: 700; color: var(--success);">● SYSTEM ONLINE</span>
+                    <p style="font-size: 11px; color: var(--text-muted);">Neural Engine Active</p>
+                </div>
+            </div>
         </header>
         
         <!-- UPLOAD CLASSROOM TAB -->
         <div id="uploadView" class="view-section active">
-            <div class="card upload-card">
-                <h3>📷 Take Attendance</h3>
-                <p>Upload a classroom photo to mark attendance using DeepFace AI.</p>
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <h3>Capture Session</h3>
+                        <p>Initiate facial recognition scan on a classroom image.</p>
+                    </div>
+                </div>
+                
                 <form id="uploadForm">
                     <div class="input-row">
                         <div class="input-group">
-                            <label>Session Name</label>
-                            <input type="text" id="sessionName" placeholder="e.g. CS101 Morning" required>
+                            <label>Module / Session Name</label>
+                            <input type="text" id="sessionName" placeholder="e.g. Advanced AI - Lec 4" required>
                         </div>
                         <div class="input-group">
-                            <label>Date</label>
+                            <label>Session Date</label>
                             <input type="date" id="targetDate" required>
                         </div>
                     </div>
                     
-                    <div class="file-upload">
-                        <input type="file" id="classroomImage" accept="image/*" required>
+                    <div class="file-upload" onclick="document.getElementById('classroomImage').click()">
+                        <div id="uploadPlaceholder">
+                            <span style="font-size: 48px;">📁</span>
+                            <p style="font-weight: 600; margin-top: 10px;">Click to drop or browse images</p>
+                            <p style="font-size: 12px; margin-top: 5px;">Supports high-res JPG, PNG (Max 10MB)</p>
+                        </div>
+                        <input type="file" id="classroomImage" accept="image/*" required style="display: none;">
                     </div>
 
-                    <button type="submit" class="btn-primary" id="uploadBtn">Process Image</button>
+                    <button type="submit" class="btn-primary" id="uploadBtn">Run Recognition Engine</button>
                 </form>
                 <div id="resultsArea" class="results-area hidden"></div>
             </div>
@@ -55,113 +74,133 @@
         <!-- VIEW REPORTS TAB -->
         <div id="reportsView" class="view-section hidden">
             <div class="card">
-                <h3>📊 Attendance Reports</h3>
-                <p>View all attendance logs triggered by the AI engine.</p>
-                <button class="btn-primary" onclick="loadReports()" style="margin-bottom: 20px; width: auto; padding: 10px 20px;">Refresh Logs</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                    <div>
+                        <h3>Attendance Intelligence</h3>
+                        <p>Audit trail of all recognized student signatures.</p>
+                    </div>
+                    <button class="btn-outline" onclick="loadReports()" style="width: auto; padding: 10px 20px;">🔄 Refresh Logs</button>
+                </div>
                 
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Student Name</th>
-                            <th>Roll No</th>
-                            <th>Date</th>
-                            <th>Session</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="reportsTableBody">
-                        <tr><td colspan="5" style="text-align: center;">Click Refresh to load data</td></tr>
-                    </tbody>
-                </table>
+                <div style="overflow-x: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Student Identity</th>
+                                <th>Reg Number</th>
+                                <th>Timestamp</th>
+                                <th>Session</th>
+                                <th>Status</th>
+                                <th>Operations</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportsTableBody">
+                            <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Please refresh to pull latest cloud logs.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <!-- MANAGE STUDENTS (FACE ENROLLMENT) TAB -->
+        <!-- MANAGE STUDENTS TAB -->
         <div id="studentsView" class="view-section hidden">
             <div class="card">
-                <h3>🧑‍🎓 Enroll New Student</h3>
-                <p>Use your webcam to register a student's face into the remote Supabase neural network.</p>
+                <h3>Genetic Enrollment</h3>
+                <p>Register new biometrics into the secure data cluster.</p>
                 
                 <div class="input-row">
                     <div class="input-group">
-                        <label>Student Name</label>
-                        <input type="text" id="enrollName" placeholder="John Doe">
+                        <label>Full Name</label>
+                        <input type="text" id="enrollName" placeholder="Candidate Name">
                     </div>
                     <div class="input-group">
-                        <label>Roll Number</label>
-                        <input type="text" id="enrollRoll" placeholder="101XYZ">
+                        <label>Registration ID</label>
+                        <input type="text" id="enrollRoll" placeholder="ID-0000">
                     </div>
                     <div class="input-group">
                         <label>Department</label>
-                        <input type="text" id="enrollDept" placeholder="Computer Science">
+                        <input type="text" id="enrollDept" placeholder="Department Name">
                     </div>
                 </div>
 
                 <div class="webcam-container">
-                    <video id="webcamVideo" autoplay playsinline width="400" height="300" style="background:#000; border-radius:8px; display:none; margin: 0 auto;"></video>
+                    <video id="webcamVideo" autoplay playsinline width="100%" height="400" style="object-fit: cover; border-radius: 8px; display:none;"></video>
                     <canvas id="webcamCanvas" style="display:none;"></canvas>
-                    <h3 id="captureInstructions" style="text-align:center; margin-top:15px; color:#ef4444;"></h3>
+                    <div id="captureInstructions" style="position: absolute; bottom: 20px; left: 0; right: 0; background: rgba(0,0,0,0.6); color: white; padding: 10px; font-weight: 600;"></div>
                 </div>
 
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button id="startCamBtn" class="btn-outline" onclick="startCamera()">Turn On Camera</button>
-                    <button id="enrollBtn" class="btn-primary" onclick="enrollStudent()" disabled>Start Angle Capture & Enroll</button>
+                <div style="display: flex; gap: 12px;">
+                    <button id="startCamBtn" class="btn-outline" onclick="startCamera()">Initialize Sensor</button>
+                    <button id="enrollBtn" class="btn-primary" onclick="enrollStudent()" disabled>Start Bio-Scan</button>
                 </div>
                 
-                <div id="enrollResults" class="results-area hidden" style="margin-top: 15px;"></div>
+                <div id="enrollResults" class="results-area hidden"></div>
                 
-                <hr style="margin: 30px 0; border: none; border-top: 1px solid var(--border);">
-                
-                <h3>📋 Currently Enrolled Students</h3>
-                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">View the list of students actively tracked in the neural network.</p>
-                <button class="btn-outline" onclick="loadStudents()" style="margin-bottom: 20px; width: auto; padding: 8px 16px;">Refresh Student List</button>
-                
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Student Name</th>
-                            <th>Roll Number</th>
-                            <th>Department</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="studentsTableBody">
-                        <tr><td colspan="3" style="text-align: center;">Click Refresh to load list</td></tr>
-                    </tbody>
-                </table>
+                <div style="margin: 48px 0 32px; border-top: 1.5px solid var(--border); padding-top: 32px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3>Student Roster</h3>
+                            <p>Current authorized signatures in the neural network.</p>
+                        </div>
+                        <button class="btn-outline" onclick="loadStudents()" style="width: auto; padding: 10px 20px;">Refetch Roster</button>
+                    </div>
+                    
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Authorized Student</th>
+                                <th>Reg ID</th>
+                                <th>Department</th>
+                                <th>Operations</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody">
+                            <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Select Refetch to view biometric database.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-
     </div>
     
     <!-- Edit Attendance Modal -->
     <div id="editModal" class="modal hidden">
-        <div class="modal-content card">
-            <h3>Update Attendance Status</h3>
-            <p>Select the correct status for this record.</p>
+        <div class="modal-content">
+            <h3 style="margin-bottom: 8px;">Modify Attendance Status</h3>
+            <p style="margin-bottom: 24px;">Adjust the verification status for this student record.</p>
             <input type="hidden" id="editAttendanceId">
             <div class="input-group">
-                <label>Status</label>
+                <label>Verification Status</label>
                 <select id="editStatusSelect" class="input-field">
-                    <option value="Present">Present</option>
-                    <option value="Absent">Absent</option>
+                    <option value="Present">Verified Present</option>
+                    <option value="Absent">Verified Absent</option>
                 </select>
             </div>
-            <div style="display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end;">
-                <button class="btn-outline" onclick="closeEditModal()">Cancel</button>
-                <button class="btn-primary" onclick="submitAttendanceUpdate()">Save Changes</button>
+            <div style="display: flex; gap: 12px; margin-top: 32px; justify-content: flex-end;">
+                <button class="btn-outline" onclick="closeEditModal()" style="width: auto;">Dismiss</button>
+                <button class="btn-primary" onclick="submitAttendanceUpdate()" style="width: auto; background: var(--success);">Update Record</button>
             </div>
         </div>
     </div>
 
     <script src="app.js"></script>
     <script>
-        // Restrict access
         if(!localStorage.getItem("token")) {
             window.location.href = "index.html";
         }
         document.getElementById("welcomeMsg").innerText = "Welcome, " + localStorage.getItem("username");
+        
+        // Dynamic file input label
+        document.getElementById('classroomImage').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name;
+            if (fileName) {
+                document.getElementById('uploadPlaceholder').innerHTML = `
+                    <span style="font-size: 48px;">✅</span>
+                    <p style="font-weight: 600; margin-top: 10px;">${fileName}</p>
+                    <p style="font-size: 12px; margin-top: 5px; color: var(--success)">File ready for processing</p>
+                `;
+            }
+        });
     </script>
 </body>
 </html>

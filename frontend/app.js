@@ -133,9 +133,9 @@ async function loadReports() {
                     <td>${row.roll_no}</td>
                     <td>${row.date}</td>
                     <td>${row.session}</td>
-                    <td><span style="color: ${row.status === 'Present' ? '#10b981' : '#ef4444'}; font-weight: 600;">${row.status}</span></td>
+                    <td><span class="badge ${row.status === 'Present' ? 'badge-present' : 'badge-absent'}">${row.status}</span></td>
                     <td>
-                        <button class="btn-sm btn-edit" onclick="openEditModal(${row.id}, '${row.status}')">Edit</button>
+                        <button class="btn-sm btn-edit" onclick="openEditModal(${row.id}, '${row.status}')">Modify</button>
                     </td>
                 </tr>
             `;

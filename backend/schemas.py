@@ -44,3 +44,6 @@ class AttendanceResponse(AttendanceBase):
     id: int
     class Config:
         from_attributes = True
+
+class AttendanceUpdate(BaseModel):
+    status: str

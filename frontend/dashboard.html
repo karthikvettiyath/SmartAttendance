@@ -67,6 +67,7 @@
                             <th>Date</th>
                             <th>Session</th>
                             <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="reportsTableBody">
@@ -122,6 +123,7 @@
                             <th>Student Name</th>
                             <th>Roll Number</th>
                             <th>Department</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="studentsTableBody">
@@ -133,6 +135,26 @@
 
     </div>
     
+    <!-- Edit Attendance Modal -->
+    <div id="editModal" class="modal hidden">
+        <div class="modal-content card">
+            <h3>Update Attendance Status</h3>
+            <p>Select the correct status for this record.</p>
+            <input type="hidden" id="editAttendanceId">
+            <div class="input-group">
+                <label>Status</label>
+                <select id="editStatusSelect" class="input-field">
+                    <option value="Present">Present</option>
+                    <option value="Absent">Absent</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end;">
+                <button class="btn-outline" onclick="closeEditModal()">Cancel</button>
+                <button class="btn-primary" onclick="submitAttendanceUpdate()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
     <script>
         // Restrict access

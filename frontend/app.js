@@ -133,7 +133,10 @@ async function loadReports() {
                     <td>${row.roll_no}</td>
                     <td>${row.date}</td>
                     <td>${row.session}</td>
-                    <td><span style="color: #10b981; font-weight: 600;">${row.status}</span></td>
+                    <td><span style="color: ${row.status === 'Present' ? '#10b981' : '#ef4444'}; font-weight: 600;">${row.status}</span></td>
+                    <td>
+                        <button class="btn-sm btn-edit" onclick="openEditModal(${row.id}, '${row.status}')">Edit</button>
+                    </td>
                 </tr>
             `;
         });
@@ -271,10 +274,65 @@ async function loadStudents() {
                     <td><strong>${row.name}</strong></td>
                     <td>${row.roll_no}</td>
                     <td>${row.department}</td>
+                    <td>
+                        <button class="btn-sm btn-danger" onclick="deleteStudent(${row.id})">Delete</button>
+                    </td>
                 </tr>
             `;
         });
     } catch (e) {
         tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: red;">Network Error Fetching Neural Roster</td></tr>`;
+    }
+}
+
+// --- Management Functions ---
+
+async function deleteStudent(studentId) {
+    if (!confirm("Are you sure you want to delete this student and all their attendance records? This cannot be undone.")) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/students/${studentId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        if (!res.ok) throw new Error("Failed to delete student");
+        alert("Student deleted successfully");
+        loadStudents(); // Refresh list
+    } catch (e) {
+        alert("Error: " + e.message);
+    }
+}
+
+function openEditModal(attendanceId, currentStatus) {
+    document.getElementById("editAttendanceId").value = attendanceId;
+    document.getElementById("editStatusSelect").value = currentStatus;
+    document.getElementById("editModal").classList.remove("hidden");
+}
+
+function closeEditModal() {
+    document.getElementById("editModal").classList.add("hidden");
+}
+
+async function submitAttendanceUpdate() {
+    const id = document.getElementById("editAttendanceId").value;
+    const newStatus = document.getElementById("editStatusSelect").value;
+
+    try {
+        const res = await fetch(`${API_BASE}/attendance/${id}`, {
+            method: 'PATCH',
+            headers: { 
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status: newStatus })
+        });
+        
+        if (!res.ok) throw new Error("Update failed");
+        
+        alert("Status updated successfully");
+        closeEditModal();
+        loadReports(); // Refresh table
+    } catch (e) {
+        alert("Error updating status: " + e.message);
     }
 }

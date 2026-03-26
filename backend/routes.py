@@ -80,28 +80,16 @@ def enroll_student(
     for idx, b64 in enumerate(image_list):
         img = base64_to_cv2(b64)
         if img is None: continue
-        
         rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        faces = detector.detect_faces(rgb)
         
-        if not faces: continue
-        
-        # Largest face crop
-        largest_face = max(faces, key=lambda b: b['box'][2] * b['box'][3])
-        x, y, w, h = largest_face['box']
-        x1, y1 = max(0, x), max(0, y)
-        x2, y2 = min(img.shape[1], x+w), min(img.shape[0], y+h)
-        
-        face_crop = img[y1:y2, x1:x2]
-        if face_crop.size == 0:
-            continue
-            
         try:
-            results = DeepFace.represent(face_crop, model_name="Facenet", enforce_detection=False)
+            results = DeepFace.represent(rgb, model_name="Facenet512", detector_backend="mtcnn", enforce_detection=False)
             if results:
-                encodings.append(results[0]["embedding"])
+                # Select the largest face if multiple people are in the webcam
+                largest = max(results, key=lambda r: r['facial_area']['w'] * r['facial_area']['h'])
+                encodings.append(largest["embedding"])
         except Exception as e:
-            print(f"[ERROR] DeepFace extraction failed: {e}")
+            print(f"[ERROR] Enrollment extraction failed: {e}")
 
     if not encodings:
         raise HTTPException(status_code=400, detail=f"No faces could be encoded from the ({len(image_list)}) received frames. Check lighting or angle.")
@@ -147,50 +135,51 @@ def upload_classroom_image(
         if s.face_encoding:
             db_encodings_map[s.id] = json.loads(s.face_encoding)
 
-    # 3. Detect Faces in Classroom Image
-    faces = detector.detect_faces(rgb_frame)
-    if not faces:
+    present_student_ids = set()
+    
+    # 3. Process the full image via DeepFace natively (which extracts, aligns, and embeds)
+    try:
+        results = DeepFace.represent(rgb_frame, model_name="Facenet512", detector_backend="mtcnn", enforce_detection=False)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"No structurally sound faces detected in the classroom image.")
+
+    if not results:
         raise HTTPException(status_code=400, detail="No faces detected in the classroom image.")
 
-    present_student_ids = set()
-
-    # 4. Process each face crop
-    for face in faces:
-        x, y, w, h = face['box']
-        x1, y1 = max(0, x), max(0, y)
-        x2, y2 = min(frame.shape[1], x+w), min(frame.shape[0], y+h)
-        face_crop = frame[y1:y2, x1:x2]
+    # 4. Map the bounding boxes and evaluate threshold
+    for res in results:
+        encoding = res["embedding"]
+        area = res["facial_area"]
+        x, y, w, h = area['x'], area['y'], area['w'], area['h']
         
-        if face_crop.size == 0: continue
-            
         color = (0, 0, 255) # Red for Unknown
         label = "Unknown"
         
-        try:
-            results = DeepFace.represent(face_crop, model_name="Facenet", enforce_detection=False)
-            if results:
-                encoding = results[0]["embedding"]
+        best_match_id = None
+        min_dist = float('inf')
+        
+        # Compare to all multi-angle encodings
+        for student_id, st_encs in db_encodings_map.items():
+            for st_enc in st_encs:
+                st_enc_np = np.array(st_enc)
+                encoding_np = np.array(encoding)
                 
-                best_match_id = None
-                min_dist = float('inf')
-                
-                # Compare to all multi-angle encodings
-                for student_id, st_encs in db_encodings_map.items():
-                    for st_enc in st_encs:
-                        dist = find_cosine_distance(np.array(st_enc), np.array(encoding))
-                        if dist < min_dist:
-                            min_dist = dist
-                            best_match_id = student_id
-                
-                # Cosine distance threshold verification for Facenet (<0.40 is strict match)
-                if min_dist < 0.40 and best_match_id is not None:
-                    present_student_ids.add(best_match_id)
-                    color = (0, 255, 0) # Green for Match
-                    label = f"{student_name_map[best_match_id]} [{min_dist:.2f}]"
-                else:
-                    label = f"Unknown [{min_dist:.2f}]"
-        except Exception as e:
-            pass
+                # Safety guard: Skip if dimensions don't match (prevents crash on size mismatch)
+                if st_enc_np.shape != encoding_np.shape:
+                    continue
+                    
+                dist = find_cosine_distance(st_enc_np, encoding_np)
+                if dist < min_dist:
+                    min_dist = dist
+                    best_match_id = student_id
+        
+        # Cosine distance threshold verification for Facenet512 (<0.30 is extremely strict)
+        if min_dist < 0.30 and best_match_id is not None:
+            present_student_ids.add(best_match_id)
+            color = (0, 255, 0) # Green for Match
+            label = f"{student_name_map[best_match_id]} [{min_dist:.2f}]"
+        else:
+            label = f"Unknown [{min_dist:.2f}]"
 
         # Graphic plotting
         cv2.rectangle(frame, (x, y), (x+w, y+h), color, 3)
@@ -218,6 +207,30 @@ def upload_classroom_image(
     data_uri = f"data:image/jpeg;base64,{out_b64}"
 
     return {
-        "message": f"Processed {len(faces)} faces. Logged {new_records} 'Present' records for {len(present_student_ids)} students.",
+        "message": f"Processed {len(results)} faces. Logged {new_records} 'Present' records for {len(present_student_ids)} students.",
         "image": data_uri
     }
+
+@router.delete("/students/{student_id}")
+def delete_student(student_id: int, db: Session = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_user)):
+    """Deletes a student and their face enrollment data."""
+    student = db.query(models.Student).filter(models.Student.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Also delete associated attendance records
+    db.query(models.Attendance).filter(models.Attendance.student_id == student_id).delete()
+    db.delete(student)
+    db.commit()
+    return {"message": "Student deleted successfully"}
+
+@router.patch("/attendance/{attendance_id}")
+def update_attendance(attendance_id: int, update_data: schemas.AttendanceUpdate, db: Session = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_user)):
+    """Updates the status of a specific attendance record."""
+    record = db.query(models.Attendance).filter(models.Attendance.id == attendance_id).first()
+    if not record:
+        raise HTTPException(status_code=404, detail="Attendance record not found")
+    
+    record.status = update_data.status
+    db.commit()
+    return {"message": "Attendance updated successfully"}
